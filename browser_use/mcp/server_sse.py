@@ -94,14 +94,74 @@ class SSEMCPServer:
         return Response()
     
     async def handle_messages(self, request: Request) -> Response:
-        """Handle incoming messages endpoint."""
-        # Starlette's Request.form() is awaitable and returns FormData; do not use
-        # it as an async context manager. Parse the form and forward it to the
-        # SseServerTransport message handler.
-        form = await request.form()
-        await self.sse.handle_post_message(form)  # type: ignore
-        # Return 200 OK to acknowledge receipt
-        return Response(status_code=200)
+        """Handle incoming messages endpoint.
+        
+        Supports two content types:
+        1. application/json - Direct JSON body (standard MCP SSE)
+        2. multipart/form-data - Extracts 'data' field containing JSON
+        """
+        try:
+            content_type = request.headers.get("content-type", "")
+            
+            # Check if this is a multipart/form-data request
+            if "multipart/form-data" in content_type:
+                # Parse form data and extract the 'data' field
+                form = await request.form()
+                data_field = form.get("data")
+                
+                if not data_field:
+                    return Response(
+                        content="Missing 'data' field in form",
+                        status_code=400,
+                        media_type="text/plain"
+                    )
+                
+                # Get the JSON content from the data field
+                if hasattr(data_field, 'read'):
+                    # It's an UploadFile
+                    json_body_bytes = await data_field.read()  # type: ignore
+                    json_body = json_body_bytes.decode('utf-8') if isinstance(json_body_bytes, bytes) else str(json_body_bytes)
+                else:
+                    # It's a string
+                    json_body = str(data_field)
+                
+                # Create a new scope/receive/send that will provide the JSON body
+                # to the SSE transport's handle_post_message
+                from starlette.datastructures import Headers
+                
+                # Build new scope with modified headers and body
+                new_scope = dict(request.scope)
+                new_headers = [(b"content-type", b"application/json")]
+                
+                # Preserve other headers except content-type and content-length
+                for name, value in request.scope.get("headers", []):
+                    if name.lower() not in (b"content-type", b"content-length"):
+                        new_headers.append((name, value))
+                
+                # Add new content-length
+                json_bytes = json_body.encode('utf-8') if isinstance(json_body, str) else json_body
+                new_headers.append((b"content-length", str(len(json_bytes)).encode('ascii')))
+                new_scope["headers"] = new_headers
+                
+                # Create a new receive function that returns our JSON body
+                async def new_receive():
+                    return {
+                        "type": "http.request",
+                        "body": json_bytes,
+                        "more_body": False
+                    }
+                
+                # Forward to SSE transport with modified scope/receive
+                await self.sse.handle_post_message(new_scope, new_receive, request._send)  # type: ignore
+                return Response(status_code=200)
+            else:
+                # Standard JSON POST - forward directly to SSE transport
+                await self.sse.handle_post_message(request.scope, request.receive, request._send)  # type: ignore
+                return Response(status_code=200)
+                
+        except Exception as exc:
+            logger.exception("Error handling POST /messages")
+            return Response(content=str(exc), status_code=500, media_type="text/plain")
     
     async def health_check(self, request: Request) -> Response:
         """Health check endpoint."""
