@@ -62,6 +62,10 @@ dependencies = [
 cli = [
     "textual>=3.2.0",
 ]
+mcp-server = [
+    "starlette>=0.41.0",
+    "uvicorn>=0.34.0",
+]
 code = [
     "matplotlib>=3.9.0",
     "numpy>=2.3.2",

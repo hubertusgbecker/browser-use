@@ -1,0 +1,151 @@
+# syntax=docker/dockerfile:1
+
+# Dockerfile for browser-use MCP Server with SSE transport
+# Simplified version without cache mounts for compatibility
+
+FROM python:3.12-slim
+
+LABEL name="browseruse-mcp" \
+    maintainer="Browser Use Team <support@browser-use.com>" \
+    description="Browser-use MCP Server with SSE transport for remote AI agent control" \
+    homepage="https://github.com/browser-use/browser-use" \
+    documentation="https://docs.browser-use.com"
+
+######### Environment Variables #################################
+
+# Global system-level config
+ENV TZ=UTC \
+    LANGUAGE=en_US:en \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    DEBIAN_FRONTEND=noninteractive \
+    APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 \
+    PYTHONIOENCODING=UTF-8 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    UV_CACHE_DIR=/root/.cache/uv \
+    UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1 \
+    UV_PYTHON_PREFERENCE=only-system \
+    npm_config_loglevel=error \
+    IN_DOCKER=True
+
+# User config
+ENV BROWSERUSE_USER="browseruse" \
+    DEFAULT_PUID=911 \
+    DEFAULT_PGID=911
+
+# Paths
+ENV CODE_DIR=/app \
+    DATA_DIR=/data \
+    VENV_DIR=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+
+# MCP Server config
+ENV MCP_SERVER_HOST=0.0.0.0 \
+    MCP_SERVER_PORT=8000 \
+    SESSION_TIMEOUT_MINUTES=30
+
+# Build shell config
+SHELL ["/bin/bash", "-o", "pipefail", "-o", "errexit", "-c"] 
+
+# Configure apt
+RUN echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/99no-intall-recommends \
+    && echo 'APT::Install-Suggests "0";' > /etc/apt/apt.conf.d/99no-intall-suggests
+
+# Create non-privileged user
+RUN echo "[*] Setting up $BROWSERUSE_USER user..." \
+    && groupadd --system $BROWSERUSE_USER \
+    && useradd --system --create-home --gid $BROWSERUSE_USER --groups audio,video $BROWSERUSE_USER \
+    && usermod -u "$DEFAULT_PUID" "$BROWSERUSE_USER" \
+    && groupmod -g "$DEFAULT_PGID" "$BROWSERUSE_USER" \
+    && mkdir -p /data /downloads \
+    && mkdir -p /home/$BROWSERUSE_USER/.config \
+    && chown -R $BROWSERUSE_USER:$BROWSERUSE_USER /home/$BROWSERUSE_USER \
+    && ln -s $DATA_DIR /home/$BROWSERUSE_USER/.config/browseruse
+
+# Install base system dependencies including Xvfb and VNC
+RUN echo "[+] Installing system dependencies..." \
+    && apt-get update -qq \
+    && apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        ca-certificates \
+        apt-utils \
+        gnupg2 \
+        unzip \
+        curl \
+        wget \
+        grep \
+        nano \
+        iputils-ping \
+        dnsutils \
+        jq \
+        xvfb \
+        x11vnc \
+        procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy uv from official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Copy dependency manifests
+WORKDIR /app
+COPY pyproject.toml uv.lock* /app/
+
+# Create venv
+RUN echo "[+] Setting up Python venv..." \
+    && uv venv \
+    && which python | grep "$VENV_DIR" \
+    && python --version
+
+# Install Chromium browser
+RUN echo "[+] Installing Chromium browser..." \
+    && apt-get update -qq \
+    && apt-get install -y --no-install-recommends \
+        chromium \
+        fonts-unifont \
+        fonts-liberation \
+        fonts-dejavu-core \
+        fonts-freefont-ttf \
+        fonts-noto-core \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -s /usr/bin/chromium /usr/bin/chromium-browser \
+    && ln -s /usr/bin/chromium /app/chromium-browser \
+    && mkdir -p "/home/${BROWSERUSE_USER}/.config/chromium/Crash Reports/pending/" \
+    && chown -R "$BROWSERUSE_USER:$BROWSERUSE_USER" "/home/${BROWSERUSE_USER}/.config" \
+    && chromium-browser --version || true
+
+# Install Python dependencies (including MCP SSE dependencies)
+RUN echo "[+] Installing Python dependencies..." \
+    && uv sync --all-extras --no-dev --no-install-project
+
+# Copy the browser-use codebase
+COPY . /app
+
+# Install browser-use package
+RUN echo "[+] Installing browser-use from source..." \
+    && uv sync --all-extras --no-dev \
+    && python -c "import browser_use; print('browser-use installed successfully')"
+
+# Set up data directories and permissions
+RUN mkdir -p "$DATA_DIR/profiles/default" /downloads \
+    && chown -R $BROWSERUSE_USER:$BROWSERUSE_USER "$DATA_DIR" /downloads \
+    && chmod +x /app/docker/docker-entrypoint-mcp.sh \
+    && echo "[✓] Docker build completed successfully"
+
+# Switch to non-privileged user
+USER "$BROWSERUSE_USER"
+
+# Expose ports
+EXPOSE 8000
+EXPOSE 5900
+EXPOSE 9222
+
+VOLUME "$DATA_DIR"
+VOLUME "/shared_files"
+
+# Use custom entrypoint for MCP server
+ENTRYPOINT ["/app/docker/docker-entrypoint-mcp.sh"]
+
+# Default command runs MCP SSE server
+CMD []

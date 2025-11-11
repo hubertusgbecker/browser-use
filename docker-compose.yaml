@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  browser-use-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    image: hubertusgbecker/browser-use:mcp-latest
+    container_name: browser-use-mcp-server
+    
+    # Run MCP server with SSE transport
+    command: ["python", "-m", "browser_use.mcp.server_sse", "--host", "0.0.0.0", "--port", "8000", "--session-timeout", "30"]
+    
+    ports:
+      # MCP SSE Server
+      - "8000:8000"
+      # VNC for browser viewing (optional)
+      - "5900:5900"
+      # Chrome DevTools Protocol
+      - "9222:9222"
+    
+    environment:
+      # LLM Configuration - set your API keys here
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      BROWSER_USE_API_KEY: ${BROWSER_USE_API_KEY:-}
+      
+      # Browser Use Configuration
+      BROWSER_USE_HEADLESS: ${BROWSER_USE_HEADLESS:-true}
+      BROWSER_USE_DISABLE_SECURITY: ${BROWSER_USE_DISABLE_SECURITY:-false}
+      BROWSER_USE_LOGGING_LEVEL: ${BROWSER_USE_LOGGING_LEVEL:-warning}
+      
+      # Docker environment
+      IN_DOCKER: "true"
+      DISPLAY: ${DISPLAY:-:99}
+      
+      # Session configuration
+      SESSION_TIMEOUT_MINUTES: "30"
+    
+    volumes:
+      # Persist browser profiles and data
+      - ./data:/data
+      # Optional: mount files for agent operations
+      - ./downloads:/downloads
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Security options
+    security_opt:
+      - seccomp:unconfined
+    
+    # Shared memory for Chrome
+    shm_size: '2gb'
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  default:
+    name: browser-use-network

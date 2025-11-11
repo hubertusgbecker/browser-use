@@ -30,6 +30,14 @@ dist/
 *.log
 *.bak
 
+# Data directory (exclude all except .gitkeep)
+/data/*
+!/data/.gitkeep
+
+# Downloads directory (exclude all except .gitkeep)
+/downloads/*
+!/downloads/.gitkeep
+
 # Secrets and sensitive files
 secrets.env
 .env

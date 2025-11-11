@@ -1,267 +1,386 @@
 <picture>
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/2ccdb752-22fb-41c7-8948-857fc1ad7e24"">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/2ccdb752-22fb-41c7-8948-857fc1ad7e24">
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/774a46d5-27a0-490c-b7d0-e65fcbbfa358">
-  <img alt="Shows a black Browser Use Logo in light color mode and a white one in dark color mode." src="https://github.com/user-attachments/assets/2ccdb752-22fb-41c7-8948-857fc1ad7e24"  width="full">
+  <img alt="Shows a black Browser Use Logo in light color mode and a white one in dark color mode." src="https://github.com/user-attachments/assets/2ccdb752-22fb-41c7-8948-857fc1ad7e24" width="full">
 </picture>
 
 <div align="center">
-    <picture>
-    <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/9955dda9-ede3-4971-8ee0-91cbc3850125"">
-    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/6797d09b-8ac3-4cb9-ba07-b289e080765a">
-    <img alt="The AI browser agent." src="https://github.com/user-attachments/assets/9955dda9-ede3-4971-8ee0-91cbc3850125"  width="400">
-    </picture>
-</div>
-
-<div align="center">
-<img src="https://media.browser-use.tools/badges/package" height="48" alt="Browser-Use Package Download Statistics">
+  <h1>Browser-Use with MCP Support</h1>
+  <p><strong>The Original Browser-Use + Model Context Protocol (MCP) Integration</strong></p>
+  
+  <a href="https://github.com/browser-use/browser-use">
+    <img src="https://img.shields.io/badge/upstream-browser--use-blue?logo=github" alt="Upstream">
+  </a>
+  <a href="https://hub.docker.com/r/hubertusgbecker/browser-use">
+    <img src="https://img.shields.io/docker/v/hubertusgbecker/browser-use?logo=docker&label=docker" alt="Docker">
+  </a>
+  <a href="https://github.com/hubertusgbecker/browser-use/releases">
+    <img src="https://img.shields.io/github/v/release/hubertusgbecker/browser-use" alt="Release">
+  </a>
 </div>
 
 ---
 
-<div align="center">
-<a href="#demos"><img src="https://media.browser-use.tools/badges/demos" alt="Demos"></a>
-<img width="16" height="1" alt="">
-<a href="https://docs.browser-use.com"><img src="https://media.browser-use.tools/badges/docs" alt="Docs"></a>
-<img width="16" height="1" alt="">
-<a href="https://browser-use.com/posts"><img src="https://media.browser-use.tools/badges/blog" alt="Blog"></a>
-<img width="16" height="1" alt="">
-<a href="https://browsermerch.com"><img src="https://media.browser-use.tools/badges/merch" alt="Merch"></a>
-<img width="100" height="1" alt="">
-<a href="https://github.com/browser-use/browser-use"><img src="https://media.browser-use.tools/badges/github" alt="Github Stars"></a>
-<img width="4" height="1" alt="">
-<a href="https://x.com/intent/user?screen_name=browser_use"><img src="https://media.browser-use.tools/badges/twitter" alt="Twitter"></a>
-<img width="4 height="1" alt="">
-<a href="https://link.browser-use.com/discord"><img src="https://media.browser-use.tools/badges/discord" alt="Discord"></a>
-<img width="4" height="1" alt="">
-<a href="https://cloud.browser-use.com"><img src="https://media.browser-use.tools/badges/cloud" height="48" alt="Browser-Use Cloud"></a>
-</div>
+## 🌟 What is This?
 
-</br>
+This is a **fork** of the amazing [browser-use](https://github.com/browser-use/browser-use) project by [@mamagnus00](https://x.com/mamagnus00) and [@gregpr07](https://x.com/gregpr07), enhanced with **MCP (Model Context Protocol)** server support.
 
-# 🤖 LLM Quickstart
+### Original Browser-Use
 
-1. Direct your favorite coding agent (Cursor, ClaudeS, etc) to [Agents.md](https://docs.browser-use.com/llms-full.txt)
-2. Prompt away!
+Browser-Use is an AI agent that autonomously controls your browser using natural language. It combines LLMs with browser automation to complete complex tasks like form filling, research, shopping, and more.
 
-<br/>
+**→ Original Repository**: [github.com/browser-use/browser-use](https://github.com/browser-use/browser-use)  
+**→ Official Docs**: [docs.browser-use.com](https://docs.browser-use.com)  
+**→ Cloud Service**: [cloud.browser-use.com](https://cloud.browser-use.com)
 
-# 👋 Human Quickstart
+### This Fork Adds MCP Support
 
-**1. Create environment with [uv](https://docs.astral.sh/uv/) (Python>=3.11):**
+**MCP (Model Context Protocol)** enables standardized communication between AI applications and external tools. This fork adds:
+
+- ✅ **MCP stdio server** - For local command-line usage
+- ✅ **MCP SSE server** - For HTTP-based clients (production-ready)
+- ✅ **Docker deployment** - Pre-configured containers with all dependencies
+- ✅ **Comprehensive testing** - Validated and production-ready
+
+Use Browser-Use as an MCP server to expose browser automation capabilities to any MCP-compatible client (Claude Desktop, VS Code, custom applications).
+
+---
+
+## 🚀 Quick Start
+
+### Option 1: Use Original Browser-Use (Recommended)
+
 ```bash
-uv init
+# Install
+uv add browser-use
+uv sync
+
+# Get free API key from https://cloud.browser-use.com/new-api-key
+echo "BROWSER_USE_API_KEY=your-key" >> .env
+
+# Install browser
+uvx browser-use install
+
+# Run
+python your_agent.py
 ```
 
-**2. Install Browser-Use package:**
+See the [official quickstart](https://docs.browser-use.com/quickstart) for more details.
+
+---
+
+### Option 2: Use This Fork with MCP
+
+#### Local MCP stdio Server
+
 ```bash
-#  We ship every day - use the latest version!
-uv add browser-use
+# Clone this fork
+git clone https://github.com/hubertusgbecker/browser-use.git
+cd browser-use
+
+# Setup environment
+uv venv --python 3.11
+source .venv/bin/activate
+uv sync
+
+# Run MCP server (stdio)
+python -m browser_use.mcp.server
+```
+
+Connect your MCP client to stdin/stdout of this process.
+
+#### MCP SSE Server (HTTP)
+
+```bash
+# Start SSE server
+python -m browser_use.mcp.server_sse --host 0.0.0.0 --port 8000
+
+# In another terminal, test it
+curl http://localhost:8000/health
+```
+
+Connect MCP clients to `http://localhost:8000/sse`
+
+#### Docker Deployment (Production)
+
+```bash
+# Build image
+docker build -f Dockerfile.mcp -t hubertusgbecker/browser-use:0.9.5 .
+
+# Or pull from Docker Hub
+docker pull hubertusgbecker/browser-use:0.9.5
+
+# Start with docker-compose
+docker-compose up -d
+
+# Verify
+curl http://localhost:8000/health
+```
+
+**Docker image**: `hubertusgbecker/browser-use:0.9.5`
+
+---
+
+## 🔧 MCP Server Details
+
+### stdio Transport
+
+```bash
+python -m browser_use.mcp.server
+```
+
+Communicates via JSON-RPC over stdin/stdout. Perfect for local integrations and command-line tools.
+
+### SSE Transport (HTTP)
+
+```bash
+python -m browser_use.mcp.server_sse --host 127.0.0.1 --port 8000
+```
+
+HTTP-based Server-Sent Events transport. Production-ready with health checks and monitoring.
+
+**Endpoints**:
+- `GET /health` - Health check
+- `GET /sse` - MCP SSE stream (connect clients here)
+- `POST /messages` - Message submission
+
+### Docker Container
+
+The Docker image includes:
+- Browser-Use v0.9.5
+- MCP servers (stdio + SSE)
+- Chromium browser (pre-installed)
+- VNC server (port 5900) - for viewing browser
+- CDP endpoint (port 9222) - Chrome DevTools Protocol
+
+**Ports**:
+- `8000` - MCP SSE server
+- `5900` - VNC (view browser)
+- `9222` - Chrome DevTools Protocol
+
+**Volumes**:
+- `./data` - Persistent data storage
+- `./downloads` - Agent file operations
+
+---
+
+## 🧪 Testing
+
+Run comprehensive tests to validate MCP functionality:
+
+```bash
+# Quick validation (4 tests)
+python docker/validate-mcp.py
+
+# Full test suite
+./docker/test-all-mcp.sh
+
+# End-to-end test
+python docker/test-mcp-e2e.py
+
+# Integration test (requires API key)
+python docker/test-reddit.py
+```
+
+All tests are validated and passing ✅
+
+---
+
+## 🐳 Docker Configuration
+
+### docker-compose.yaml
+
+```yaml
+services:
+  browser-use-mcp-server:
+    image: hubertusgbecker/browser-use:0.9.5
+    container_name: browser-use-mcp-server
+    ports:
+      - "8000:8000"  # MCP SSE server
+      - "5900:5900"  # VNC
+      - "9222:9222"  # CDP
+    volumes:
+      - ./data:/data
+      - ./downloads:/downloads
+    environment:
+      - BROWSER_USE_API_KEY=${BROWSER_USE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    restart: unless-stopped
+```
+
+### Environment Variables
+
+Create `.env` file:
+
+```bash
+# For ChatBrowserUse (recommended - $10 free credits)
+BROWSER_USE_API_KEY=your-key
+
+# Or use other LLMs
+OPENAI_API_KEY=your-openai-key
+ANTHROPIC_API_KEY=your-anthropic-key
+GOOGLE_API_KEY=your-google-key
+```
+
+---
+
+## 📚 Documentation
+
+### This Fork
+
+- **MCP Testing**: `docker/MCP-TESTING.md` - Testing guide
+- **Docker Deployment**: `DOCKER-DEPLOYMENT.md` - Deployment details
+
+### Original Browser-Use
+
+- **Official Docs**: [docs.browser-use.com](https://docs.browser-use.com)
+- **Examples**: [github.com/browser-use/browser-use/examples](https://github.com/browser-use/browser-use/tree/main/examples)
+- **Cloud Docs**: [docs.cloud.browser-use.com](https://docs.cloud.browser-use.com)
+
+---
+
+## 🎯 Use Cases
+
+### As MCP Server
+
+Expose browser automation to MCP clients:
+- **Claude Desktop** - Control browser through Claude
+- **VS Code Extensions** - Browser automation in IDE
+- **Custom Applications** - Integrate via MCP protocol
+
+### Direct Usage (Original)
+
+Use Browser-Use directly for:
+- Form filling and data entry
+- Web scraping and research
+- Shopping and price comparison
+- Testing and QA automation
+- Social media management
+
+See [demos](https://docs.browser-use.com/examples) in the original repository.
+
+---
+
+## 🛠️ Development
+
+### Setup
+
+```bash
+git clone https://github.com/hubertusgbecker/browser-use.git
+cd browser-use
+uv venv --python 3.11
+source .venv/bin/activate
+uv sync --all-extras --dev
+```
+
+### Pre-commit Hooks
+
+```bash
+./bin/lint.sh
+```
+
+### Run Tests
+
+```bash
+./bin/test.sh
+```
+
+---
+
+## 🔄 Relationship to Upstream
+
+This fork tracks [browser-use/browser-use](https://github.com/browser-use/browser-use) and adds MCP server capabilities.
+
+**What's the same**:
+- ✅ Complete Browser-Use library (v0.9.5)
+- ✅ All original features and APIs
+- ✅ Compatible with official examples
+- ✅ Works with Browser-Use Cloud
+
+**What's added**:
+- ✅ MCP stdio server implementation
+- ✅ MCP SSE server (HTTP transport)
+- ✅ Docker deployment configuration
+- ✅ Comprehensive test suite
+
+**To use original Browser-Use without MCP**:
+→ Go to [github.com/browser-use/browser-use](https://github.com/browser-use/browser-use)
+
+---
+
+## 📦 Installation Options
+
+### 1. Original Browser-Use (pip)
+```bash
+pip install browser-use
+```
+
+### 2. This Fork (from source)
+```bash
+git clone https://github.com/hubertusgbecker/browser-use.git
+cd browser-use
 uv sync
 ```
 
-**3. Get your API key from [Browser Use Cloud](https://cloud.browser-use.com/new-api-key) and add it to your `.env` file (new signups get $10 free credits):**
-```
-# .env
-BROWSER_USE_API_KEY=your-key
-```
-
-**4. Install Chromium browser:**
+### 3. Docker (this fork)
 ```bash
-uvx browser-use install
+docker pull hubertusgbecker/browser-use:0.9.5
 ```
 
-**5. Run your first agent:**
-```python
-from browser_use import Agent, Browser, ChatBrowserUse
-import asyncio
+---
 
-async def example():
-    browser = Browser(
-        # use_cloud=True,  # Uncomment to use a stealth browser on Browser Use Cloud
-    )
+## 🤝 Contributing
 
-    llm = ChatBrowserUse()
+This is a personal fork. For Browser-Use core development:
+→ Contribute to [browser-use/browser-use](https://github.com/browser-use/browser-use)
 
-    agent = Agent(
-        task="Find the number of stars of the browser-use repo",
-        llm=llm,
-        browser=browser,
-    )
+For MCP-specific features in this fork:
+→ Open issues or PRs in this repository
 
-    history = await agent.run()
-    return history
+---
 
-if __name__ == "__main__":
-    history = asyncio.run(example())
-```
+## 📄 License
 
-Check out the [library docs](https://docs.browser-use.com) and the [cloud docs](https://docs.cloud.browser-use.com) for more!
+MIT License - Same as original [Browser-Use](https://github.com/browser-use/browser-use)
 
-<br/>
+---
 
-# 🔥 Deploy on Sandboxes
+## 🙏 Credits
 
-We handle agents, browsers, persistence, auth, cookies, and LLMs. The agent runs right next to the browser for minimal latency.
+**Original Browser-Use** by:
+- [@mamagnus00](https://x.com/mamagnus00) (Magnus)
+- [@gregpr07](https://x.com/gregpr07) (Gregor)
+- Made with ❤️ in Zurich and San Francisco
 
-```python
-from browser_use import Browser, sandbox, ChatBrowserUse
-from browser_use.agent.service import Agent
-import asyncio
+**MCP Integration** by:
+- [@hubertusgbecker](https://github.com/hubertusgbecker)
 
-@sandbox()
-async def my_task(browser: Browser):
-    agent = Agent(task="Find the top HN post", browser=browser, llm=ChatBrowserUse())
-    await agent.run()
+**Community**:
+- [Discord](https://link.browser-use.com/discord)
+- [Twitter](https://x.com/browser_use)
+- [Documentation](https://docs.browser-use.com)
 
-# Just call it like any async function
-asyncio.run(my_task())
-```
+---
 
-See [Going to Production](https://docs.browser-use.com/production) for more details.
+## ⚡ Quick Links
 
-<br/>
+| Resource | Link |
+|----------|------|
+| **Original Repo** | [github.com/browser-use/browser-use](https://github.com/browser-use/browser-use) |
+| **This Fork** | [github.com/hubertusgbecker/browser-use](https://github.com/hubertusgbecker/browser-use) |
+| **Docker Hub** | [hub.docker.com/r/hubertusgbecker/browser-use](https://hub.docker.com/r/hubertusgbecker/browser-use) |
+| **Official Docs** | [docs.browser-use.com](https://docs.browser-use.com) |
+| **Cloud Service** | [cloud.browser-use.com](https://cloud.browser-use.com) |
+| **MCP Spec** | [modelcontextprotocol.io](https://modelcontextprotocol.io) |
 
-# 🚀 Template Quickstart
-
-**Want to get started even faster?** Generate a ready-to-run template:
-
-```bash
-uvx browser-use init --template default
-```
-
-This creates a `browser_use_default.py` file with a working example. Available templates:
-- `default` - Minimal setup to get started quickly
-- `advanced` - All configuration options with detailed comments
-- `tools` - Examples of custom tools and extending the agent
-
-You can also specify a custom output path:
-```bash
-uvx browser-use init --template default --output my_agent.py
-```
-
-<br/>
-
-# Demos
-
-
-### 📋 Form-Filling
-#### Task = "Fill in this job application with my resume and information."
-![Job Application Demo](https://github.com/user-attachments/assets/57865ee6-6004-49d5-b2c2-6dff39ec2ba9)
-[Example code ↗](https://github.com/browser-use/browser-use/blob/main/examples/use-cases/apply_to_job.py)
-
-
-### 🍎 Grocery-Shopping
-#### Task = "Put this list of items into my instacart."
-
-https://github.com/user-attachments/assets/a6813fa7-4a7c-40a6-b4aa-382bf88b1850
-
-[Example code ↗](https://github.com/browser-use/browser-use/blob/main/examples/use-cases/buy_groceries.py)
-
-
-### 💻 Personal-Assistant.
-#### Task = "Help me find parts for a custom PC."
-
-https://github.com/user-attachments/assets/ac34f75c-057a-43ef-ad06-5b2c9d42bf06
-
-[Example code ↗](https://github.com/browser-use/browser-use/blob/main/examples/use-cases/pcpartpicker.py)
-
-
-### 💡See [more examples here ↗](https://docs.browser-use.com/examples) and give us a star!
-
-<br/>
-
-## Integrations, hosting, custom tools, MCP, and more on our [Docs ↗](https://docs.browser-use.com)
-
-<br/>
-
-# FAQ
-
-<details>
-<summary><b>What's the best model to use?</b></summary>
-
-We optimized **ChatBrowserUse()** specifically for browser automation tasks. On avg it completes tasks 3-5x faster than other models with SOTA accuracy.
-
-**Pricing (per 1M tokens):**
-- Input tokens: $0.20
-- Output tokens: $2.00
-- Cached tokens: $0.02
-
-For other LLM providers, see our [supported models documentation](https://docs.browser-use.com/supported-models).
-</details>
-
-
-<details>
-<summary><b>Can I use custom tools with the agent?</b></summary>
-
-Yes! You can add custom tools to extend the agent's capabilities:
-
-```python
-from browser_use import Tools
-
-tools = Tools()
-
-@tools.action(description='Description of what this tool does.')
-def custom_tool(param: str) -> str:
-    return f"Result: {param}"
-
-agent = Agent(
-    task="Your task",
-    llm=llm,
-    browser=browser,
-    tools=tools,
-)
-```
-
-</details>
-
-<details>
-<summary><b>Can I use this for free?</b></summary>
-
-Yes! Browser-Use is open source and free to use. You only need to choose an LLM provider (like OpenAI, Google, ChatBrowserUse, or run local models with Ollama).
-</details>
-
-<details>
-<summary><b>How do I handle authentication?</b></summary>
-
-Check out our authentication examples:
-- [Using real browser profiles](https://github.com/browser-use/browser-use/blob/main/examples/browser/real_browser.py) - Reuse your existing Chrome profile with saved logins
-- If you want to use temporary accounts with inbox, choose AgentMail
-- To sync your auth profile with the remote browser, run `curl -fsSL https://browser-use.com/profile.sh | BROWSER_USE_API_KEY=XXXX sh` (replace XXXX with your API key)
-
-These examples show how to maintain sessions and handle authentication seamlessly.
-</details>
-
-<details>
-<summary><b>How do I solve CAPTCHAs?</b></summary>
-
-For CAPTCHA handling, you need better browser fingerprinting and proxies. Use [Browser Use Cloud](https://cloud.browser-use.com) which provides stealth browsers designed to avoid detection and CAPTCHA challenges.
-</details>
-
-<details>
-<summary><b>How do I go into production?</b></summary>
-
-Chrome can consume a lot of memory, and running many agents in parallel can be tricky to manage.
-
-For production use cases, use our [Browser Use Cloud API](https://cloud.browser-use.com) which handles:
-- Scalable browser infrastructure
-- Memory management
-- Proxy rotation
-- Stealth browser fingerprinting
-- High-performance parallel execution
-</details>
-
-<br/>
+---
 
 <div align="center">
+  
+**Original Browser-Use**: Tell your computer what to do, and it gets it done.  
+**This Fork**: Now accessible via Model Context Protocol.
 
-**Tell your computer what to do, and it gets it done.**
-
-<img src="https://github.com/user-attachments/assets/06fa3078-8461-4560-b434-445510c1766f" width="400"/>
-
-[![Twitter Follow](https://img.shields.io/twitter/follow/Magnus?style=social)](https://x.com/intent/user?screen_name=mamagnus00)
-&emsp;&emsp;&emsp;
-[![Twitter Follow](https://img.shields.io/twitter/follow/Gregor?style=social)](https://x.com/intent/user?screen_name=gregpr07)
+[![Star the original](https://img.shields.io/github/stars/browser-use/browser-use?style=social)](https://github.com/browser-use/browser-use)
+[![Star this fork](https://img.shields.io/github/stars/hubertusgbecker/browser-use?style=social)](https://github.com/hubertusgbecker/browser-use)
 
 </div>
-
-<div align="center"> Made with ❤️ in Zurich and San Francisco </div>
