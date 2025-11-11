@@ -28,11 +28,17 @@ jobs:
           # Use uv to create venv and install deps; fallback to pip if uv sync fails
           uv sync || pip install -r requirements.txt || true
 
-      - name: Run MCP SSE integration tests
+      - name: Run MCP SSE integration script
         run: |
           # Run the integration test using uv so environment matches developer flow
           uv run python docker/test-mcp-sse-integration.py
         timeout-minutes: 15
+
+      - name: Run mcp-info pytest
+        run: |
+          # Run the pytest that verifies the MCP server resolves model to gpt-5-mini
+          uv run python -m pytest -q tests/mcp/test_mcp_info.py::test_mcp_info_returns_gpt5 -q
+        timeout-minutes: 5
 
       - name: Upload logs
         if: failure()
