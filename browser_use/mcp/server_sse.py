@@ -95,9 +95,13 @@ class SSEMCPServer:
     
     async def handle_messages(self, request: Request) -> Response:
         """Handle incoming messages endpoint."""
-        async with request.form() as form:
-            await self.sse.handle_post_message(form)  # type: ignore
-        return Response()
+        # Starlette's Request.form() is awaitable and returns FormData; do not use
+        # it as an async context manager. Parse the form and forward it to the
+        # SseServerTransport message handler.
+        form = await request.form()
+        await self.sse.handle_post_message(form)  # type: ignore
+        # Return 200 OK to acknowledge receipt
+        return Response(status_code=200)
     
     async def health_check(self, request: Request) -> Response:
         """Health check endpoint."""
